@@ -2,9 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>星待ちの放課後 — セリフタイピング</title>
-<meta name="description" content="表示されたセリフをローマ字で打つと物語が進む、縦型のセリフタイピングゲーム。" />
+<meta name="description" content="表示されたセリフをローマ字で打つと物語が進む、横型のセリフタイピングゲーム。複数のローマ字入力に対応。" />
 <style>
   :root {
     --primary: #6d5efc;
@@ -14,148 +14,88 @@
     --text-muted: #a7a7c2;
     --surface: rgba(255, 255, 255, 0.06);
     --border: rgba(255, 255, 255, 0.14);
-    --good: #4fd1a5;
-    --bad: #ff6b73;
     --font: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+    --mono: "SF Mono", "Roboto Mono", ui-monospace, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    font-family: var(--font);
-    color: var(--text);
-    background: #0c0c16;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100dvh;
-    overflow: hidden;
+    font-family: var(--font); color: var(--text); background: #0c0c16;
+    display: flex; align-items: center; justify-content: center; min-height: 100dvh; padding: 20px;
   }
 
-  /* 9:16 vertical stage */
   .stage {
-    position: relative;
-    width: 100%;
-    max-width: 430px;
-    height: 100dvh;
-    max-height: min(100dvh, calc(430px * 16 / 9));
-    aspect-ratio: 9 / 16;
-    overflow: hidden;
+    position: relative; width: 100%; max-width: 920px; aspect-ratio: 16 / 9;
+    min-height: 480px; border-radius: 22px; overflow: hidden;
     background:
-      radial-gradient(120% 80% at 50% 0%, var(--g1, #2b2150), transparent 60%),
-      radial-gradient(120% 80% at 50% 100%, var(--g2, #141026), #0c0c16 70%);
+      radial-gradient(90% 120% at 50% -10%, var(--g1, #2b2150), transparent 60%),
+      radial-gradient(90% 120% at 50% 110%, var(--g2, #141026), #0c0c16 70%);
     transition: --g1 600ms, --g2 600ms;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+    display: flex; flex-direction: column;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
   }
   @property --g1 { syntax: "<color>"; inherits: true; initial-value: #2b2150; }
   @property --g2 { syntax: "<color>"; inherits: true; initial-value: #141026; }
 
-  /* twinkling stars */
   .stars { position: absolute; inset: 0; pointer-events: none; }
-  .stars i {
-    position: absolute; width: 2px; height: 2px; border-radius: 50%;
-    background: #fff; opacity: 0.5; animation: tw 3s infinite ease-in-out;
-  }
-  @keyframes tw { 0%,100% { opacity: 0.15; } 50% { opacity: 0.9; } }
+  .stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; opacity: .5; animation: tw 3s infinite ease-in-out; }
+  @keyframes tw { 0%,100% { opacity: .15; } 50% { opacity: .9; } }
 
-  .topbar {
-    position: relative; z-index: 2;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 18px; font-size: 12px; color: var(--text-muted);
-  }
+  .topbar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; font-size: 13px; color: var(--text-muted); }
   .title-chip { font-weight: 700; color: var(--text); letter-spacing: .02em; }
-  .stat-row { display: flex; gap: 14px; font-variant-numeric: tabular-nums; }
+  .stat-row { display: flex; gap: 18px; font-variant-numeric: tabular-nums; }
   .stat-row b { color: var(--text); font-weight: 700; }
 
-  .scene {
-    position: relative; z-index: 2; flex: 1;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 22px; padding: 12px 22px;
-  }
+  /* landscape scene: avatar left, text right */
+  .scene { position: relative; z-index: 2; flex: 1; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 8px 48px; }
+  .scene.pop .avatar { animation: pop 500ms cubic-bezier(.2,.9,.3,1.2); }
+  @keyframes pop { 0% { transform: scale(.7) translateX(-14px); opacity: .3; } 100% { transform: scale(1) translateX(0); opacity: 1; } }
 
   .avatar {
-    width: 116px; height: 116px; border-radius: 50%;
-    display: grid; place-items: center;
-    font-size: 46px; font-weight: 800; color: #fff;
+    flex: 0 0 auto; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 60px; font-weight: 800; color: #fff;
     background: linear-gradient(145deg, var(--c1, var(--primary)), var(--c2, var(--accent)));
-    box-shadow: 0 12px 40px rgba(0,0,0,.4), inset 0 0 0 4px rgba(255,255,255,.12);
-    transition: transform 500ms cubic-bezier(.2,.9,.3,1.2), background 500ms;
-    transform: translateY(0);
+    box-shadow: 0 14px 44px rgba(0,0,0,.4), inset 0 0 0 4px rgba(255,255,255,.12);
   }
-  .scene.pop .avatar { animation: pop 500ms cubic-bezier(.2,.9,.3,1.2); }
-  @keyframes pop { 0% { transform: scale(.7) translateY(14px); opacity: .3; } 100% { transform: scale(1) translateY(0); opacity: 1; } }
-
-  .speaker {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 700; color: var(--text);
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 5px 12px; border-radius: 999px;
-  }
+  .textcol { flex: 1 1 auto; max-width: 560px; display: flex; flex-direction: column; gap: 16px; }
+  .speaker { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text); background: var(--surface); border: 1px solid var(--border); padding: 5px 12px; border-radius: 999px; }
   .speaker .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c1, var(--primary)); }
 
-  .line-jp {
-    text-align: center; font-size: clamp(20px, 6.2vw, 27px); font-weight: 700;
-    line-height: 1.5; letter-spacing: .01em; min-height: 1.5em;
-    text-wrap: balance;
-  }
-
-  .line-romaji {
-    text-align: center; font-size: clamp(15px, 4.4vw, 19px);
-    line-height: 1.9; letter-spacing: .04em; font-weight: 600;
-    word-break: break-word;
-  }
+  .line-jp { font-size: clamp(22px, 3.4vw, 32px); font-weight: 700; line-height: 1.5; letter-spacing: .01em; text-wrap: balance; }
+  .line-romaji { font-family: var(--mono); font-size: clamp(16px, 2.4vw, 22px); line-height: 1.7; letter-spacing: .03em; font-weight: 600; word-break: break-word; }
   .line-romaji .done { color: var(--primary); }
-  .line-romaji .cur {
-    color: var(--text); border-bottom: 3px solid var(--accent); border-radius: 2px;
-  }
+  .line-romaji .cur { color: var(--text); background: var(--accent); border-radius: 3px; padding: 0 1px; }
   .line-romaji .todo { color: var(--text-muted); }
-  .line-romaji.miss { animation: shake 240ms; }
+  .line-romaji .sp { display: inline-block; width: .35em; }
+  .line-romaji.miss { animation: shake 220ms; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
-  .progress { display: flex; gap: 7px; justify-content: center; flex-wrap: wrap; }
-  .progress span { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .footer { position: relative; z-index: 2; padding: 12px 24px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .progress { display: flex; gap: 8px; }
+  .progress span { width: 9px; height: 9px; border-radius: 50%; background: var(--border); transition: all .2s; }
   .progress span.on { background: var(--accent); }
-  .progress span.now { background: var(--text); transform: scale(1.25); }
+  .progress span.now { background: var(--text); transform: scale(1.3); }
+  .hint { font-size: 12px; color: var(--text-muted); text-align: center; }
 
-  .footer { position: relative; z-index: 2; padding: 14px 22px 26px; text-align: center; }
-  .hint { font-size: 12px; color: var(--text-muted); }
-
-  /* overlay screens */
-  .overlay {
-    position: absolute; inset: 0; z-index: 5;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 18px; padding: 32px; text-align: center;
-    background: linear-gradient(180deg, rgba(12,12,22,.72), rgba(12,12,22,.92));
-    backdrop-filter: blur(6px);
-  }
+  .overlay { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 32px; text-align: center; background: linear-gradient(180deg, rgba(12,12,22,.72), rgba(12,12,22,.93)); backdrop-filter: blur(6px); }
   .overlay.hidden { display: none; }
-  .game-title { font-size: 30px; font-weight: 800; line-height: 1.25; }
-  .game-title small { display: block; font-size: 14px; font-weight: 600; color: var(--accent); margin-top: 8px; letter-spacing: .14em; }
-  .lead { font-size: 14px; color: var(--text-muted); line-height: 1.7; max-width: 30ch; }
+  .game-title { font-size: 34px; font-weight: 800; line-height: 1.25; }
+  .game-title small { display: block; font-size: 14px; font-weight: 600; color: var(--accent); margin-top: 8px; letter-spacing: .16em; }
+  .lead { font-size: 14px; color: var(--text-muted); line-height: 1.8; max-width: 42ch; }
+  .lead code { font-family: var(--mono); color: var(--text); background: var(--surface); padding: 1px 6px; border-radius: 5px; }
 
-  .btn {
-    appearance: none; border: 0; cursor: pointer; font-family: inherit;
-    font-size: 16px; font-weight: 700; color: #fff;
-    background: var(--primary); padding: 14px 30px; border-radius: 12px;
-    transition: background 140ms, transform 80ms;
-    box-shadow: 0 10px 30px rgba(109,94,252,.4);
-  }
+  .btn { appearance: none; border: 0; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 700; color: #fff; background: var(--primary); padding: 14px 32px; border-radius: 12px; transition: background 140ms, transform 80ms; box-shadow: 0 10px 30px rgba(109,94,252,.4); }
   .btn:hover { background: var(--primary-hover); }
   .btn:active { transform: translateY(1px); }
   .btn.ghost { background: transparent; color: var(--text); box-shadow: none; border: 1px solid var(--border); }
 
-  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 320px; }
-  .result-grid .cell {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 8px;
-  }
-  .result-grid .num { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; width: 100%; max-width: 380px; }
+  .result-grid .cell { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 8px; }
+  .result-grid .num { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .result-grid .lbl { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-  .rank { font-size: 56px; font-weight: 900; line-height: 1; background: linear-gradient(120deg, var(--primary), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .rank { font-size: 60px; font-weight: 900; line-height: 1; background: linear-gradient(120deg, var(--primary), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
-  /* invisible capture input (also summons mobile keyboard) */
   .capture { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
-
   .credit { position: absolute; bottom: 8px; width: 100%; text-align: center; font-size: 10px; color: rgba(255,255,255,.25); z-index: 2; }
 </style>
 </head>
@@ -174,27 +114,27 @@
 
     <div class="scene" id="scene">
       <div class="avatar" id="avatar">★</div>
-      <div class="speaker"><span class="dot"></span><span id="speaker">ナレーション</span></div>
-      <div class="line-jp" id="lineJp">—</div>
-      <div class="line-romaji" id="lineRomaji"></div>
+      <div class="textcol">
+        <div class="speaker"><span class="dot"></span><span id="speaker">ナレーション</span></div>
+        <div class="line-jp" id="lineJp">—</div>
+        <div class="line-romaji" id="lineRomaji"></div>
+      </div>
     </div>
 
     <div class="footer">
       <div class="progress" id="progress"></div>
-      <div class="hint" style="margin-top:12px;">表示されたローマ字をそのまま入力 ／ スペースは自動で飛ばします</div>
+      <div class="hint">表示されたローマ字を入力 ／ 打ち方は複数OK（<code>し=shi/si</code>、<code>つ=tsu/tu</code>、<code>ん=n/nn</code> など）</div>
     </div>
 
     <input class="capture" id="capture" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" />
 
-    <!-- Start screen -->
     <div class="overlay" id="startScreen">
       <div class="game-title">星待ちの放課後<small>SERIFU TYPING</small></div>
-      <p class="lead">表示されるセリフを<strong>ローマ字</strong>で打つと、物語のカットが進みます。<br>全{N}カット、放課後の小さな物語を打ち切ろう。</p>
+      <p class="lead">表示されるセリフを<strong>ローマ字</strong>で打つと、放課後の小さな物語のカットが進みます。全{N}カット。<br>ローマ字は <code>shi/si</code> のように<strong>複数の打ち方に対応</strong>しています。</p>
       <button class="btn" id="startBtn">はじめる</button>
-      <p class="hint">キーボード推奨 ／ スマホは画面タップで入力欄が出ます</p>
+      <p class="hint">パソコンのキーボードで遊ぶゲームです</p>
     </div>
 
-    <!-- Result screen -->
     <div class="overlay hidden" id="resultScreen">
       <div class="rank" id="rank">A</div>
       <div class="game-title" style="font-size:22px;">クリア！</div>
@@ -215,78 +155,192 @@
 
 <script>
 (() => {
-  // ---- Original script: speaker, gradient theme, JP line, romaji to type ----
+  // ============================================================
+  //  Romaji typing engine — kana based, accepts multiple spellings
+  // ============================================================
+  const TABLE = {
+    "あ":["a"],"い":["i","yi"],"う":["u","wu","whu"],"え":["e"],"お":["o"],
+    "か":["ka","ca"],"き":["ki"],"く":["ku","cu","qu"],"け":["ke"],"こ":["ko","co"],
+    "さ":["sa"],"し":["shi","si","ci"],"す":["su"],"せ":["se","ce"],"そ":["so"],
+    "た":["ta"],"ち":["chi","ti"],"つ":["tsu","tu"],"て":["te"],"と":["to"],
+    "な":["na"],"に":["ni"],"ぬ":["nu"],"ね":["ne"],"の":["no"],
+    "は":["ha"],"ひ":["hi"],"ふ":["fu","hu"],"へ":["he"],"ほ":["ho"],
+    "ま":["ma"],"み":["mi"],"む":["mu"],"め":["me"],"も":["mo"],
+    "や":["ya"],"ゆ":["yu"],"よ":["yo"],
+    "ら":["ra"],"り":["ri"],"る":["ru"],"れ":["re"],"ろ":["ro"],
+    "わ":["wa"],"ゐ":["wi"],"ゑ":["we"],"を":["wo","o"],
+    "が":["ga"],"ぎ":["gi"],"ぐ":["gu"],"げ":["ge"],"ご":["go"],
+    "ざ":["za"],"じ":["ji","zi"],"ず":["zu"],"ぜ":["ze"],"ぞ":["zo"],
+    "だ":["da"],"ぢ":["di"],"づ":["du"],"で":["de"],"ど":["do"],
+    "ば":["ba"],"び":["bi"],"ぶ":["bu"],"べ":["be"],"ぼ":["bo"],
+    "ぱ":["pa"],"ぴ":["pi"],"ぷ":["pu"],"ぺ":["pe"],"ぽ":["po"],
+    "ゔ":["vu"],
+    "きゃ":["kya"],"きゅ":["kyu"],"きょ":["kyo"],
+    "しゃ":["sha","sya"],"しゅ":["shu","syu"],"しょ":["sho","syo"],
+    "ちゃ":["cha","tya","cya"],"ちゅ":["chu","tyu","cyu"],"ちょ":["cho","tyo","cyo"],
+    "にゃ":["nya"],"にゅ":["nyu"],"にょ":["nyo"],
+    "ひゃ":["hya"],"ひゅ":["hyu"],"ひょ":["hyo"],
+    "みゃ":["mya"],"みゅ":["myu"],"みょ":["myo"],
+    "りゃ":["rya"],"りゅ":["ryu"],"りょ":["ryo"],
+    "ぎゃ":["gya"],"ぎゅ":["gyu"],"ぎょ":["gyo"],
+    "じゃ":["ja","jya","zya"],"じゅ":["ju","jyu","zyu"],"じょ":["jo","jyo","zyo"],
+    "びゃ":["bya"],"びゅ":["byu"],"びょ":["byo"],
+    "ぴゃ":["pya"],"ぴゅ":["pyu"],"ぴょ":["pyo"],
+    "ふぁ":["fa"],"ふぃ":["fi"],"ふぇ":["fe"],"ふぉ":["fo"],
+    "てぃ":["thi"],"でぃ":["dhi"],
+    "ぁ":["xa","la"],"ぃ":["xi","li"],"ぅ":["xu","lu"],"ぇ":["xe","le"],"ぉ":["xo","lo"],
+    "ゃ":["xya","lya"],"ゅ":["xyu","lyu"],"ょ":["xyo","lyo"],
+    "ー":["-"],"、":[""],"。":[""],"・":[""]
+  };
+  const SMALL_FOLLOW = new Set(["ゃ","ゅ","ょ","ぁ","ぃ","ぅ","ぇ","ぉ"]);
+  const VOWELS = "aiueo";
+
+  // Split a kana reading string into typing units (combos / っ / ん / etc.)
+  function toUnits(kana) {
+    const u = [];
+    for (let i = 0; i < kana.length; i++) {
+      const two = kana.slice(i, i + 2);
+      if (two.length === 2 && SMALL_FOLLOW.has(kana[i + 1]) && TABLE[two]) { u.push(two); i++; continue; }
+      u.push(kana[i]);
+    }
+    return u;
+  }
+
+  // Acceptable romaji spellings for unit at idx (with lookahead for っ / ん)
+  function cands(units, idx) {
+    const c = units[idx];
+    if (c === "っ") {
+      const out = ["xtu", "ltu", "xtsu", "ltsu"];
+      const next = idx + 1 < units.length ? cands(units, idx + 1) : [];
+      for (const nc of next) if (nc && !VOWELS.includes(nc[0])) out.push(nc[0]);
+      return [...new Set(out)];
+    }
+    if (c === "ん") {
+      const out = ["nn", "xn"];
+      if (idx + 1 >= units.length) { out.push("n"); }
+      else {
+        const next = cands(units, idx + 1);
+        // single "n" is allowed when every following spelling starts with a
+        // consonant other than "y" (before vowels or や行 it must be "nn").
+        const safe = next.every(nc => nc && !VOWELS.includes(nc[0]) && nc[0] !== "y");
+        if (safe) out.push("n");
+      }
+      return out;
+    }
+    return TABLE[c] || [c];
+  }
+
+  // Is `typed` a valid prefix of / complete match for the unit list?
+  function evalState(units, typed) {
+    let prefix = false, complete = false;
+    (function dfs(idx, s) {
+      if (s === "") { prefix = true; if (idx === units.length) complete = true; return; }
+      if (idx >= units.length) return;
+      for (const cand of cands(units, idx)) {
+        if (cand === "") { dfs(idx + 1, s); continue; }
+        if (s.length < cand.length) { if (cand.startsWith(s)) prefix = true; }
+        else if (s.startsWith(cand)) dfs(idx + 1, s.slice(cand.length));
+      }
+    })(0, typed);
+    return { prefix, complete };
+  }
+
+  // How far has `typed` advanced? → furthest unit index + leftover partial
+  function consumed(units, typed) {
+    let best = { idx: 0, partial: typed };
+    (function dfs(idx, s) {
+      if (idx > best.idx || (idx === best.idx && s.length < best.partial.length)) best = { idx, partial: s };
+      if (s === "" || idx >= units.length) return;
+      for (const cand of cands(units, idx)) {
+        if (cand === "") { dfs(idx + 1, s); continue; }
+        if (s.length >= cand.length && s.startsWith(cand)) dfs(idx + 1, s.slice(cand.length));
+      }
+    })(0, typed);
+    return best;
+  }
+
+  // A nice display spelling for a unit (prefers what the player is typing)
+  function dispRomaji(units, i, prefer) {
+    const cs = cands(units, i);
+    if (prefer) { const m = cs.find(c => c && (c.startsWith(prefer) || prefer.startsWith(c))); if (m) return m; }
+    const u = units[i];
+    if (u === "っ") { const n = dispRomaji(units, i + 1); return (n && !VOWELS.includes(n[0])) ? n[0] : "xtu"; }
+    if (u === "ん") {
+      if (i + 1 >= units.length) return "nn";
+      const n = dispRomaji(units, i + 1);
+      return (n && !VOWELS.includes(n[0]) && n[0] !== "y") ? "n" : "nn";
+    }
+    return (TABLE[u] && TABLE[u][0]) || u;
+  }
+
+  // ============================================================
+  //  Original script — display JP (with punctuation) + kana to type
+  // ============================================================
   const CUTS = [
     { who: "ナレーション", glyph: "★", c1: "#8a7dff", c2: "#3b2f6e", g1: "#241c47", g2: "#120f28",
-      jp: "放課後、誰もいない屋上。", romaji: "houkago daremo inai okujou" },
+      jp: "放課後、誰もいない屋上。", kana: "ほうかごだれもいないおくじょう" },
     { who: "ひなた", glyph: "ひ", c1: "#6d5efc", c2: "#9b8bff", g1: "#2b2150", g2: "#141026",
-      jp: "ねえ、今日って星が見える日かな。", romaji: "nee kyou tte hoshi ga mieru hi kana" },
+      jp: "ねえ、今日って星が見える日かな。", kana: "ねえきょうってほしがみえるひかな" },
     { who: "そら", glyph: "そ", c1: "#ff7a59", c2: "#ffb199", g1: "#3a2238", g2: "#161021",
-      jp: "たぶんね。空がこんなに澄んでる。", romaji: "tabun ne sora ga konnani sunderu" },
+      jp: "たぶんね。空がこんなに澄んでる。", kana: "たぶんねそらがこんなにすんでる" },
     { who: "ひなた", glyph: "ひ", c1: "#6d5efc", c2: "#9b8bff", g1: "#2b2150", g2: "#141026",
-      jp: "あなたの名前、そらっていうのにね。", romaji: "anata no namae sora tte iu noni ne" },
+      jp: "あなたの名前、そらっていうのにね。", kana: "あなたのなまえそらっていうのにね" },
     { who: "そら", glyph: "そ", c1: "#ff7a59", c2: "#ffb199", g1: "#3a2238", g2: "#161021",
-      jp: "それ、何回も言ってるよ。", romaji: "sore nankai mo itteru yo" },
+      jp: "それ、何回も言ってるよ。", kana: "それなんかいもいってるよ" },
     { who: "ひなた", glyph: "ひ", c1: "#6d5efc", c2: "#9b8bff", g1: "#2b2150", g2: "#141026",
-      jp: "だって本当のことだもん。", romaji: "datte hontou no koto da mon" },
+      jp: "だって本当のことだもん。", kana: "だってほんとうのことだもん" },
     { who: "そら", glyph: "そ", c1: "#ff7a59", c2: "#ffb199", g1: "#3a2238", g2: "#161021",
-      jp: "…ほら、一番星。", romaji: "hora ichiban boshi" },
+      jp: "…ほら、一番星。", kana: "ほらいちばんぼし" },
     { who: "ひなた", glyph: "ひ", c1: "#6d5efc", c2: "#9b8bff", g1: "#2b2150", g2: "#141026",
-      jp: "わあ、ほんとだ！", romaji: "waa honto da" },
+      jp: "わあ、ほんとだ！", kana: "わあほんとだ" },
     { who: "ナレーション", glyph: "☆", c1: "#8a7dff", c2: "#3b2f6e", g1: "#241c47", g2: "#120f28",
-      jp: "ふたりの放課後は、まだ続く。", romaji: "futari no houkago wa mada tsuzuku" },
+      jp: "ふたりの放課後は、まだ続く。", kana: "ふたりのほうかごはまだつづく" },
   ];
 
   const el = (id) => document.getElementById(id);
-  const stage = el("stage"), scene = el("scene");
-  const avatar = el("avatar"), speaker = el("speaker"), lineJp = el("lineJp"), lineRomaji = el("lineRomaji");
-  const progress = el("progress"), capture = el("capture");
+  const stage = el("stage"), scene = el("scene"), avatar = el("avatar");
+  const lineJp = el("lineJp"), lineRomaji = el("lineRomaji"), progress = el("progress"), capture = el("capture");
   const comboEl = el("combo"), accEl = el("acc"), timeEl = el("time");
 
-  // build starfield
   const stars = el("stars");
-  for (let i = 0; i < 46; i++) {
+  for (let i = 0; i < 50; i++) {
     const s = document.createElement("i");
-    s.style.left = Math.random() * 100 + "%";
-    s.style.top = Math.random() * 70 + "%";
-    s.style.animationDelay = (Math.random() * 3) + "s";
-    s.style.transform = `scale(${0.6 + Math.random() * 1.6})`;
+    s.style.left = Math.random() * 100 + "%"; s.style.top = Math.random() * 80 + "%";
+    s.style.animationDelay = (Math.random() * 3) + "s"; s.style.transform = `scale(${0.6 + Math.random() * 1.6})`;
     stars.appendChild(s);
   }
-
-  // intro lead {N}
-  document.querySelector("#startScreen .lead").innerHTML =
-    document.querySelector("#startScreen .lead").innerHTML.replace("{N}", CUTS.length);
-
-  // build progress dots
-  CUTS.forEach(() => { const d = document.createElement("span"); progress.appendChild(d); });
+  const leadEl = document.querySelector("#startScreen .lead");
+  leadEl.innerHTML = leadEl.innerHTML.replace("{N}", CUTS.length);
+  CUTS.forEach(() => progress.appendChild(document.createElement("span")));
   const dots = [...progress.children];
 
-  let idx = 0;          // current cut
-  let exp = "";         // expected romaji (lowercase)
-  let pos = 0;          // pointer into exp
-  let started = false;  // timer started
-  let startT = 0, endT = 0;
+  let idx = 0, units = [], typed = "";
+  let started = false, startT = 0, raf = 0;
   let correct = 0, miss = 0, combo = 0, maxCombo = 0;
-  let raf = 0;
-
-  function skipSpaces() { while (pos < exp.length && exp[pos] === " ") pos++; }
 
   function applyTheme(cut) {
-    stage.style.setProperty("--g1", cut.g1);
-    stage.style.setProperty("--g2", cut.g2);
-    avatar.style.setProperty("--c1", cut.c1);
-    avatar.style.setProperty("--c2", cut.c2);
+    stage.style.setProperty("--g1", cut.g1); stage.style.setProperty("--g2", cut.g2);
+    avatar.style.setProperty("--c1", cut.c1); avatar.style.setProperty("--c2", cut.c2);
     document.documentElement.style.setProperty("--c1", cut.c1);
   }
 
-  function renderRomaji() {
+  function render() {
+    const { idx: done, partial } = consumed(units, typed);
     let html = "";
-    for (let i = 0; i < exp.length; i++) {
-      const ch = exp[i] === " " ? "&nbsp;" : exp[i];
-      const cls = i < pos ? "done" : (i === pos ? "cur" : "todo");
-      html += `<span class="${cls}">${ch}</span>`;
-    }
+    units.forEach((_, i) => {
+      let romaji;
+      if (i === done) romaji = dispRomaji(units, i, partial);
+      else romaji = dispRomaji(units, i);
+      if (!romaji) return;
+      if (i < done) html += `<span class="done">${romaji}</span>`;
+      else if (i === done) {
+        const p = Math.min(partial.length, romaji.length);
+        html += `<span class="done">${romaji.slice(0, p)}</span>`;
+        html += `<span class="cur">${romaji.slice(p, p + 1)}</span>`;
+        html += `<span class="todo">${romaji.slice(p + 1)}</span>`;
+      } else html += `<span class="todo">${romaji}</span>`;
+      html += `<span class="sp"></span>`;
+    });
     lineRomaji.innerHTML = html;
   }
 
@@ -294,12 +348,10 @@
     const cut = CUTS[i];
     applyTheme(cut);
     avatar.textContent = cut.glyph;
-    speaker.querySelector ? null : null;
     el("speaker").textContent = cut.who;
     lineJp.textContent = cut.jp;
-    exp = cut.romaji.toLowerCase();
-    pos = 0; skipSpaces();
-    renderRomaji();
+    units = toUnits(cut.kana); typed = "";
+    render();
     dots.forEach((d, k) => { d.className = k < i ? "on" : (k === i ? "now" : ""); });
     scene.classList.remove("pop"); void scene.offsetWidth; scene.classList.add("pop");
   }
@@ -309,84 +361,57 @@
     const total = correct + miss;
     accEl.textContent = total ? Math.round((correct / total) * 100) : 100;
   }
-
-  function tick() {
-    timeEl.textContent = ((performance.now() - startT) / 1000).toFixed(1);
-    raf = requestAnimationFrame(tick);
-  }
+  function tick() { timeEl.textContent = ((performance.now() - startT) / 1000).toFixed(1); raf = requestAnimationFrame(tick); }
 
   function handleChar(ch) {
-    if (!ch) return;
-    ch = ch.toLowerCase();
-    if (ch.length !== 1) return;
+    ch = (ch || "").toLowerCase();
+    if (!/^[a-z\-]$/.test(ch)) return;
     if (!started) { started = true; startT = performance.now(); raf = requestAnimationFrame(tick); }
-
-    if (ch === exp[pos]) {
-      pos++; correct++; combo++; maxCombo = Math.max(maxCombo, combo);
-      skipSpaces();
-      renderRomaji();
-      updateStats();
-      if (pos >= exp.length) nextCut();
+    const cand = typed + ch;
+    const st = evalState(units, cand);
+    if (st.prefix || st.complete) {
+      typed = cand; correct++; combo++; maxCombo = Math.max(maxCombo, combo);
+      render(); updateStats();
+      if (st.complete) nextCut();
     } else {
       miss++; combo = 0; updateStats();
       lineRomaji.classList.remove("miss"); void lineRomaji.offsetWidth; lineRomaji.classList.add("miss");
     }
   }
 
-  function nextCut() {
-    idx++;
-    if (idx >= CUTS.length) return finish();
-    setTimeout(() => loadCut(idx), 260);
-  }
+  function nextCut() { idx++; if (idx >= CUTS.length) return finish(); setTimeout(() => loadCut(idx), 260); }
 
   function finish() {
-    endT = performance.now();
     cancelAnimationFrame(raf);
-    const secs = (endT - startT) / 1000;
+    const secs = (performance.now() - startT) / 1000;
     const total = correct + miss;
     const acc = total ? Math.round((correct / total) * 100) : 100;
-    // rank by accuracy + speed
     const cpm = correct / (secs / 60);
     let rank = "C";
-    if (acc >= 98 && cpm >= 220) rank = "S";
-    else if (acc >= 95 && cpm >= 160) rank = "A";
-    else if (acc >= 90 && cpm >= 110) rank = "B";
-    el("rTime").textContent = secs.toFixed(1);
-    el("rAcc").textContent = acc;
-    el("rCombo").textContent = maxCombo;
-    el("rank").textContent = rank;
+    if (acc >= 98 && cpm >= 240) rank = "S";
+    else if (acc >= 95 && cpm >= 180) rank = "A";
+    else if (acc >= 90 && cpm >= 120) rank = "B";
+    el("rTime").textContent = secs.toFixed(1); el("rAcc").textContent = acc;
+    el("rCombo").textContent = maxCombo; el("rank").textContent = rank;
     window._lastResult = { secs: secs.toFixed(1), acc, maxCombo, rank };
     el("resultScreen").classList.remove("hidden");
   }
 
   function startGame() {
     idx = 0; correct = 0; miss = 0; combo = 0; maxCombo = 0; started = false;
-    cancelAnimationFrame(raf);
-    timeEl.textContent = "0.0"; updateStats();
-    el("startScreen").classList.add("hidden");
-    el("resultScreen").classList.add("hidden");
+    cancelAnimationFrame(raf); timeEl.textContent = "0.0"; updateStats();
+    el("startScreen").classList.add("hidden"); el("resultScreen").classList.add("hidden");
     el("shareHint").textContent = " ";
-    loadCut(0);
-    focusCapture();
+    loadCut(0); focusCapture();
   }
-
   function focusCapture() { try { capture.focus({ preventScroll: true }); } catch (_) {} }
 
-  // ---- input wiring (works on desktop keydown + mobile input event) ----
-  capture.addEventListener("input", (e) => {
-    const data = e.data || capture.value;
-    if (data) for (const ch of data) handleChar(ch);
-    capture.value = "";
-  });
+  capture.addEventListener("input", (e) => { const d = e.data || capture.value; if (d) for (const ch of d) handleChar(ch); capture.value = ""; });
   document.addEventListener("keydown", (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key && e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
-      handleChar(e.key);
-      e.preventDefault();
-    }
+    if (e.key && e.key.length === 1 && /[a-zA-Z\-]/.test(e.key)) { handleChar(e.key); e.preventDefault(); }
   });
   stage.addEventListener("click", focusCapture);
-
   el("startBtn").addEventListener("click", startGame);
   el("retryBtn").addEventListener("click", startGame);
   el("shareBtn").addEventListener("click", async () => {
@@ -395,6 +420,9 @@
     try { await navigator.clipboard.writeText(text); el("shareHint").textContent = "記録をコピーしました ✓"; }
     catch (_) { el("shareHint").textContent = text; }
   });
+
+  // expose for self-test
+  window._engine = { toUnits, evalState, cands };
 })();
 </script>
 </body>
