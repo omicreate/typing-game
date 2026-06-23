@@ -189,11 +189,13 @@
     "ふぁ":["fa"],"ふぃ":["fi"],"ふぇ":["fe"],"ふぉ":["fo"],
     "てぃ":["thi"],"でぃ":["dhi"],
     "ぁ":["xa","la"],"ぃ":["xi","li"],"ぅ":["xu","lu"],"ぇ":["xe","le"],"ぉ":["xo","lo"],
-    "ゃ":["xya","lya"],"ゅ":["xyu","lyu"],"ょ":["xyo","lyo"],
-    "ー":["-"],"、":[""],"。":[""],"・":[""]
+    "ゃ":["xya","lya"],"ゅ":["xyu","lyu"],"ょ":["xyo","lyo"],"ゎ":["xwa","lwa"]
   };
-  const SMALL_FOLLOW = new Set(["ゃ","ゅ","ょ","ぁ","ぃ","ぅ","ぇ","ぉ"]);
+  const SMALL_FOLLOW = new Set(["ゃ","ゅ","ょ","ぁ","ぃ","ぅ","ぇ","ぉ","ゎ"]);
   const VOWELS = "aiueo";
+  // Symbols that are shown in jp but require NO typing (auto-skipped if present in kana).
+  const SKIP = new Set([..."、。，．・…〜ー！？!?「」『』（）()［］[]　 \t"].filter(ch => ch !== "ー"));
+  // NOTE: "ー" (long-vowel mark) is intentionally NOT skipped — it is typed (see cands).
 
   // Split a kana reading string into typing units (combos / っ / ん / etc.)
   function toUnits(kana) {
@@ -209,6 +211,12 @@
   // Acceptable romaji spellings for unit at idx (with lookahead for っ / ん)
   function cands(units, idx) {
     const c = units[idx];
+    if (SKIP.has(c)) return [""];                         // 句読点・記号: 打鍵不要
+    if (c === "ー") {                                      // 長音符: 直前の母音、または "-"
+      const out = ["-"];
+      if (idx > 0) { const pc = cands(units, idx - 1)[0]; const v = pc && pc[pc.length - 1]; if (v && VOWELS.includes(v)) out.push(v); }
+      return out;
+    }
     if (c === "っ") {
       const out = ["xtu", "ltu", "xtsu", "ltsu"];
       const next = idx + 1 < units.length ? cands(units, idx + 1) : [];
@@ -217,9 +225,10 @@
     }
     if (c === "ん") {
       const out = ["nn", "xn"];
-      if (idx + 1 >= units.length) { out.push("n"); }
+      let j = idx + 1; while (j < units.length && SKIP.has(units[j])) j++; // 記号は「次の音」と見なさない
+      if (j >= units.length) { out.push("n"); } // 語末（記号のみが後続）は単独 n も可
       else {
-        const next = cands(units, idx + 1);
+        const next = cands(units, j);
         // single "n" is allowed when every following spelling starts with a
         // consonant other than "y" (before vowels or や行 it must be "nn").
         const safe = next.every(nc => nc && !VOWELS.includes(nc[0]) && nc[0] !== "y");
@@ -234,7 +243,12 @@
   function evalState(units, typed) {
     let prefix = false, complete = false;
     (function dfs(idx, s) {
-      if (s === "") { prefix = true; if (idx === units.length) complete = true; return; }
+      if (s === "") {
+        prefix = true;
+        let j = idx; while (j < units.length && cands(units, j).includes("")) j++; // 末尾の句読点を飛ばす
+        if (j === units.length) complete = true;
+        return;
+      }
       if (idx >= units.length) return;
       for (const cand of cands(units, idx)) {
         if (cand === "") { dfs(idx + 1, s); continue; }
@@ -261,9 +275,11 @@
 
   // A nice display spelling for a unit (prefers what the player is typing)
   function dispRomaji(units, i, prefer) {
+    if (SKIP.has(units[i])) return "";
     const cs = cands(units, i);
     if (prefer) { const m = cs.find(c => c && (c.startsWith(prefer) || prefer.startsWith(c))); if (m) return m; }
     const u = units[i];
+    if (u === "ー") return cs.find(c => c !== "-") || "-"; // 既定は母音表示
     if (u === "っ") { const n = dispRomaji(units, i + 1); return (n && !VOWELS.includes(n[0])) ? n[0] : "xtu"; }
     if (u === "ん") {
       if (i + 1 >= units.length) return "nn";
