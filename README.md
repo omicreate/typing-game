@@ -19,15 +19,6 @@
 - かなベースのローマ字入力エンジン（複数スペル許容・打鍵ごとの着色・コンボ・正確率・タイム）
 - 外部ライブラリ・APIなし。`index.html` 1ファイルで完結
 
-## ローカルで動かす
-
-```bash
-# どれか1つ
-npx serve hoshimachi-serifu-typing     # → http://localhost:3000
-python3 -m http.server                 # hoshimachi-serifu-typing/ で実行
-```
-または `index.html` をブラウザで直接開くだけ。
-
 ## カスタマイズ・セリフ追加
 
 `index.html` 内の `CUTS` 配列を編集すると、セリフ・話者・配色を差し替えられます。書き方の詳しい仕様（kanaの書き方ルール、配色プリセット、入力エンジンの挙動）は **[docs/CUTS-FORMAT.md](docs/CUTS-FORMAT.md)** を参照。
