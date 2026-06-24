@@ -23,6 +23,11 @@
 
 `index.html` 内の `CUTS` 配列を編集すると、セリフ・話者・配色を差し替えられます。書き方の詳しい仕様（kanaの書き方ルール、配色プリセット、入力エンジンの挙動）は **[docs/CUTS-FORMAT.md](docs/CUTS-FORMAT.md)** を参照。
 
+## 公開前チェック
+
+- `npm run check:public-info`
+- [セキュリティ方針](SECURITY.md)
+
 ```js
 // CUTS 配列に1行足すだけ。who=話者, T.*=配色プリセット, jp=表示文, kana=打つ読み
 cut("ひなた", T.hinata, "日本語のセリフ（記号OK）", "うつよみがな"),
